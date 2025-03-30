@@ -1,0 +1,12 @@
+{% extends "chat/base.html" %}
+
+{% block content %}
+<div class="auth-container">
+    <h2>修改昵称</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">保存</button>
+    </form>
+</div>
+{% endblock %}
