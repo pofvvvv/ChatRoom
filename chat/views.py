@@ -3,6 +3,10 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm  # 替换原有的 UserCreationForm
+from rest_framework import viewsets
+from chat.serializer import CustomUserSerializer  # 替换原有的 UserSerializer
+from .models import CustomUser, ChatMessage  # 添加 ChatMessage 导入
+from .serializer import CustomUserSerializer, ChatMessageSerializer  # 添加序列化器导入
 
 
 @login_required
@@ -54,3 +58,11 @@ def room(request, room_name):
         'room_name': room_name,
         'username': request.user.username  # 传递当前用户名到模板
     })
+
+class CustomUserViewSet(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer  # 添加序列化器
+
+class ChatMessageViewSet(viewsets.ModelViewSet):
+    queryset = ChatMessage.objects.all()
+    serializer_class = ChatMessageSerializer

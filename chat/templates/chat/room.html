@@ -197,11 +197,12 @@
             nicknameDiv.className = `text-xs mb-1 ${
                 data.user_id === currentUserId ? 'text-blue-100' : 'text-gray-500'
             }`;
-            nicknameDiv.textContent = data.user_id === currentUserId ? '我' : data.nickname;
+            // 修复显示逻辑：使用实际昵称而非统一显示"我"
+            nicknameDiv.textContent = data.nickname;  // 移除了三元判断
             
             const textDiv = document.createElement('div');
             textDiv.className = 'break-words';
-            textDiv.textContent = data.message;
+            textDiv.textContent = data.message;  // 确保使用正确的消息字段
             
             const timeDiv = document.createElement('div');
             timeDiv.className = `text-xs mt-1 ${
@@ -220,6 +221,21 @@
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             
+            if (data.type === 'history_messages') {
+                console.log('收到历史消息:', data);  // 调试用
+                const chatLog = document.getElementById('chat-log');
+                chatLog.innerHTML = '';
+                
+                data.messages.forEach(msg => {
+                    if (!msg.message) {  // 验证数据结构
+                        console.error('无效消息格式:', msg);
+                        return;
+                    }
+                    const messageElement = createMessageElement(msg);
+                    chatLog.appendChild(messageElement);
+                });
+                chatLog.scrollTop = chatLog.scrollHeight;
+            }
             if (data.type === 'online_users') {
                 updateOnlineUsers(data.users);
             } else if (data.type === 'chat_message') {

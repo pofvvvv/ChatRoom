@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-(2z&4&@5x5zzsz4d)5*t-e&-^-bb95%5z%lq!%29td)a7g172a"
+SECRET_KEY = "DJANGO_SECRET_KEY"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -136,3 +136,18 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "chatroom",
+        "USER": "postgres",
+        "PASSWORD": "DB_PASSWORD",  
+        "HOST": "localhost",
+        "PORT": "5432",
+        "CONN_MAX_AGE": 60,  # 添加连接超时时间
+        "OPTIONS": {
+            "connect_timeout": 10,
+        }
+    }
+}

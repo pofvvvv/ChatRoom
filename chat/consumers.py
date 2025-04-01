@@ -2,6 +2,8 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.exceptions import StopConsumer
 from django.core.cache import cache
+from channels.db import database_sync_to_async
+from .models import ChatMessage
 
 class ChatConsumer(AsyncWebsocketConsumer):
     """
@@ -40,6 +42,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # 接受WebSocket连接
             await self.accept()
             
+            # 新增：发送历史消息
+            history = await self.get_history_messages()
+            await self.send(text_data=json.dumps({
+                'type': 'history_messages',
+                'messages': history
+            }))
+            
         except Exception as e:
             print(f"连接错误: {str(e)}")
             await self.close()
@@ -53,6 +62,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             text_data_json = json.loads(text_data)
             message = text_data_json['message']
             user = self.scope["user"]
+            
+            # 新增：保存消息到数据库
+            await self.save_message_to_db(user, message)
             
             # 广播消息
             await self.channel_layer.group_send(
@@ -132,7 +144,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         获取在线用户列表
         """
         try:
-            online_users = list(cache.get(self.room_group_name, []))
+            online_users = list(await self.get_cache(self.room_group_name))
             user_info = {
                 'id': self.user_id,
                 'nickname': self.nickname
@@ -144,8 +156,34 @@ class ChatConsumer(AsyncWebsocketConsumer):
             else:
                 online_users = [u for u in online_users if u['id'] != self.user_id]
 
-            cache.set(self.room_group_name, online_users, timeout=None)
+            await self.set_cache(self.room_group_name, online_users)
             return online_users
         except Exception as e:
             print(f"获取在线用户列表错误: {str(e)}")
             return []
+        
+    @database_sync_to_async
+    def get_cache(self, key):
+        return cache.get(key, [])
+        
+    @database_sync_to_async
+    def set_cache(self, key, value):
+        return cache.set(key, value, timeout=None)
+
+    @database_sync_to_async
+    def save_message_to_db(self, user, message):
+        """同步方法：保存消息到数据库"""
+        from .models import ChatMessage  # 添加模型导入
+        ChatMessage.objects.create(
+            sender=user,
+            room=self.room_name,
+            content=message
+        )
+
+    @database_sync_to_async
+    def get_history_messages(self):
+        messages = (ChatMessage.objects
+                   .filter(room=self.room_name)
+                   .select_related('sender')
+                   .order_by('timestamp')[:50])  # 保持升序查询
+        return [message.to_dict() for message in messages]  # 直接返回查询顺序
