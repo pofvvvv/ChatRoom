@@ -15,4 +15,5 @@ urlpatterns = [
 # 在文件末尾添加DRF路由
 router = DefaultRouter()
 router.register(r'chatmessages', views.ChatMessageViewSet)
+router.register(r'customuser', views.CustomUserViewSet)
 urlpatterns += router.urls

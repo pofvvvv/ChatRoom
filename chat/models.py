@@ -14,7 +14,9 @@ class ChatMessage(models.Model):
         CustomUser,
         on_delete=models.CASCADE,
         related_name='messages',
-        verbose_name='发送者'
+        verbose_name='发送者',
+        null=False,  # 明确禁止 null 值
+        blank=False  # 明确禁止空值
     )
     room = models.CharField('聊天室', max_length=100)
     timestamp = models.DateTimeField('发送时间', auto_now_add=True, db_index=True)

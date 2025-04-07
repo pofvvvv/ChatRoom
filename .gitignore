@@ -1,0 +1,38 @@
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+.env
+.env.local
+.env.development
+.env.production
+
+# Node
+node_modules/
+dist/
+build/
+.cache/
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 测试文件
+test.py
+test_api.py
+test_axios.js
+test_axios_register.js
+
+# 其他
+*.bak
+*.tmp
+*.temp
